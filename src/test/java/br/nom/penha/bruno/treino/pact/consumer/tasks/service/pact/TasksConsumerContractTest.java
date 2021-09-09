@@ -1,5 +1,7 @@
 package br.nom.penha.bruno.treino.pact.consumer.tasks.service.pact;
 
+import au.com.dius.pact.consumer.dsl.DslPart;
+import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit.PactProviderRule;
 import au.com.dius.pact.consumer.junit.PactVerification;
@@ -13,6 +15,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 public class TasksConsumerContractTest {
@@ -22,6 +25,11 @@ public class TasksConsumerContractTest {
 
     @Pact(consumer = "ConsumidorBasico")
     public RequestResponsePact criaPacto(PactDslWithProvider construtor){
+        DslPart corpo = new PactDslJsonBody()
+                            .numberType("id",1L)
+                            .stringType("task")
+                            .stringType("dueDate");
+
         return construtor
                 .given("Existe uma tarefa com o id = 1")
                 .uponReceiving("Quando vier uma tarefa #1")
@@ -29,11 +37,7 @@ public class TasksConsumerContractTest {
                     .method("GET")
                 .willRespondWith()
                     .status(200)
-                    .body("{\n" +
-                            "    \"id\": 1,\n" +
-                            "    \"task\" : \"Tarefa do Pact\",\n" +
-                            "    \"dueDate\": \"2021-09-09\"    \n" +
-                            "}")
+                    .body(corpo)
                 .toPact();
     }
 
@@ -49,7 +53,7 @@ public class TasksConsumerContractTest {
 
         // Verifico o resultado
         assertThat(tarefa.getId(), is(1L));
-        assertThat(tarefa.getTask(), is("Tarefa do Pact"));
+        assertThat(tarefa.getTask(), is(notNullValue()));
 
     }
 }
